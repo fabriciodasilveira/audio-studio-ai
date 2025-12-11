@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Serviço da Interface Web (Streamlit)
+  web-interface:
+    build: .
+    container_name: audio_studio_web
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./models:/app/models # Mapeia a pasta de modelos do host
+      - ./temp:/app/temp     # Mapeia a pasta temporária (opcional, para persistir áudios)
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: streamlit run app.py --server.address=0.0.0.0
+
+  # Serviço da API (FastAPI)
+  api-server:
+    build: .
+    container_name: audio_studio_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models # Precisa acessar os mesmos modelos
+      - ./temp:/app/temp
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python api.py
+
+volumes:
+  models:
+  temp:
